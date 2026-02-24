@@ -18,31 +18,31 @@ openspec init
 
 ## 安装
 
+**方式 1：一行命令（推荐）**
 ```powershell
-# 1. 克隆仓库
-git clone git@github.com:ganlingyao/game-dev-openspec.git $env:TEMP\gdw
+# 进入项目目录后执行
+& ([scriptblock]::Create((gh api repos/ganlingyao/game-dev-openspec/contents/run.ps1 --jq '.content' | % { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) })))
+```
 
-# 2. 运行安装脚本
+**方式 2：手动执行**
+```powershell
+gh repo clone ganlingyao/game-dev-openspec $env:TEMP\gdw -- --depth 1
 & "$env:TEMP\gdw\install.ps1"
-
-# 3. 清理
 Remove-Item -Recurse -Force $env:TEMP\gdw
 ```
 
 ## 更新
 
+**方式 1：一行命令**
 ```powershell
-# 1. 克隆最新版本
-git clone git@github.com:ganlingyao/game-dev-openspec.git $env:TEMP\gdw
+& ([scriptblock]::Create((gh api repos/ganlingyao/game-dev-openspec/contents/run.ps1 --jq '.content' | % { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) }))) -Action update
+```
 
-# 2. 运行更新脚本
+**方式 2：手动执行**
+```powershell
+gh repo clone ganlingyao/game-dev-openspec $env:TEMP\gdw -- --depth 1
 & "$env:TEMP\gdw\update.ps1"
-
-# 3. 清理
 Remove-Item -Recurse -Force $env:TEMP\gdw
-
-# 强制更新所有 skills
-& "$env:TEMP\gdw\update.ps1" -Force
 ```
 
 ## 包含的 Skills
