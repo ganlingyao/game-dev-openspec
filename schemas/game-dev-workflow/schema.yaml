@@ -1,5 +1,5 @@
 name: game-dev-workflow
-version: 3
+version: 4
 description: 游戏开发工作流 - research → proposal → design → tech-research → specs → tasks
 
 artifacts:
@@ -7,8 +7,11 @@ artifacts:
     generates: research.md
     description: 游戏品类调研、竞品分析、风险评估
     template: research.md
+    skill: game-dev-research-game
     instruction: |
-      调研游戏品类，产出 research.md。
+      调研游戏品类，产出 research.md,文档使用中文编写。
+
+      **必须调用 skill: game-dev-research-game**
 
       内容包括：
       - 游戏品类分析：同类游戏的成功要素
@@ -22,8 +25,9 @@ artifacts:
     generates: proposal.md
     description: 游戏提案、核心机制、功能清单
     template: proposal.md
+    skill: null
     instruction: |
-      基于 research.md 创建游戏提案。
+      基于 research.md 创建游戏提案,文档使用中文编写。
 
       内容包括：
       - 游戏概念：2-3 句描述核心创意和目标玩家
@@ -39,8 +43,11 @@ artifacts:
     generates: design.md
     description: 技术架构设计、伪代码
     template: design.md
+    skill: game-dev-design-unity
     instruction: |
-      基于 proposal.md 创建技术设计文档。
+      基于 proposal.md 创建技术设计文档,文档使用中文编写。
+
+      **必须调用 skill: game-dev-design-unity**
 
       内容包括：
       - 项目架构：目录结构和组织方式
@@ -58,8 +65,11 @@ artifacts:
     generates: tech-research.md
     description: Unity API 验证与映射
     template: tech-research.md
+    skill: tech-research-unity
     instruction: |
-      验证 design.md 的设计在 Unity 中的可行性。
+      验证 design.md 的设计在 Unity 中的可行性,文档使用中文编写。
+
+      **必须调用 skill: tech-research-unity**
 
       内容包括：
       - Unity 版本推荐：LTS 版本选择和理由
@@ -77,8 +87,9 @@ artifacts:
     generates: specs/**/*.md
     description: 功能规格说明
     template: spec.md
+    skill: null
     instruction: |
-      为 proposal 中的每个能力模块创建规格文档。
+      为 proposal 中的每个能力模块创建规格文档,文档使用中文编写。
 
       格式要求：
       - 每个能力一个文件：specs/<capability>/spec.md
@@ -95,8 +106,9 @@ artifacts:
     generates: tasks.md
     description: 实现任务清单
     template: tasks.md
+    skill: null
     instruction: |
-      创建实现任务清单。
+      创建实现任务清单,文档使用中文编写。
 
       格式要求：
       - 按阶段分组：## 编号. 阶段名称

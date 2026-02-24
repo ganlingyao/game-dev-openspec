@@ -1,11 +1,60 @@
 ---
 name: code-unity
-description: Unity game coding capability. Includes code standards, unit testing, and code quality review. Automatically triggered during the apply phase.
+description: Unity game coding capability. Includes code standards, unit testing, and code quality review. Must be explicitly called during the apply phase.
 ---
 
 # Code Unity Skill - Unity Coding Capability
 
 This Skill provides Unity game development coding capabilities to ensure code quality, standardization, and testability.
+
+---
+
+## ⚠️ CRITICAL: Skill Invocation Requirements
+
+> **This skill MUST be explicitly called before writing any Unity C# code.**
+
+### When to Call This Skill
+
+During the **apply phase** (implementing tasks from tasks.md), you **MUST** call this skill using the Skill tool before writing any code:
+
+```
+Skill(skill="game-dev-code-unity")
+```
+
+**DO NOT** rely on "automatic triggering" - skills are never automatically triggered. You must explicitly invoke this skill to ensure:
+- Code follows project standards
+- Proper file structure is used
+- Unit tests are written when needed
+- Code quality checks are performed
+
+### Mandatory Post-Script Actions (UnityMCP)
+
+When using UnityMCP tools (`manage_script`, `create_script`, etc.) to create or modify scripts:
+
+**You MUST call `mcp__UnityMCP__read_console` after EVERY script creation/modification** to:
+1. Check for compilation errors
+2. Verify the domain reload completed successfully
+3. Catch any syntax or type errors immediately
+
+**Workflow:**
+```
+1. Create/modify script via UnityMCP
+2. Wait for domain reload (check editor_state.isCompiling if needed)
+3. Call read_console to check for errors
+4. If errors exist: fix immediately before proceeding
+5. Only continue to next task after successful compilation
+```
+
+**Example:**
+```
+# After creating a script
+mcp__UnityMCP__manage_script(action="create", ...)
+
+# MANDATORY: Check for compilation errors
+mcp__UnityMCP__read_console(filter_type="Error")
+
+# If errors found, fix them before continuing
+```
 
 ---
 
@@ -377,19 +426,45 @@ void Update()
 
 ## Coding Workflow
 
-1. **Read task and related design**
-2. **Write code** (follow standards)
-3. **Self-check** (check against list)
-4. **Write tests** (if needed)
-5. **Run tests**
-6. **Mark task as complete**
+1. **Read task and related design** - Understand what needs to be built
+2. **Write code** (follow standards in this skill)
+3. **Check compilation** - ⚠️ **MANDATORY**: Call `read_console` to verify no errors
+4. **Self-check** (check against list above)
+5. **Write tests** (if required by task)
+6. **Run tests** (call test-unity skill)
+7. **Mark task as complete** (only after successful compilation and tests)
+
+### Workflow with UnityMCP
+
+When implementing tasks using UnityMCP:
+
+```
+For each script to create/modify:
+  1. Use mcp__UnityMCP__manage_script or mcp__UnityMCP__create_script
+  2. ⚠️ IMMEDIATELY call mcp__UnityMCP__read_console(filter_type="Error")
+  3. If errors found:
+     - Analyze the error message
+     - Fix the code using mcp__UnityMCP__manage_script(action="update", ...)
+     - Call read_console again to verify fix
+     - Repeat until no errors
+  4. Only proceed to next script/task after successful compilation
+```
+
+**Important**: Do NOT batch create multiple scripts without checking console between each one. Errors should be caught and fixed immediately.
 
 ---
 
 ## Trigger Conditions
 
-This Skill is automatically triggered in the following situations:
-- When executing the apply phase
-- When writing Unity C# code
+> **NOTE**: This skill is NOT automatically triggered. You must explicitly call it.
+
+Call this skill explicitly (`Skill(skill="game-dev-code-unity")`) in these situations:
+- When executing the **apply phase** to implement tasks
+- When writing any Unity C# code
 - When code review is needed
 - When unit tests need to be written
+
+**The apply phase workflow should be:**
+1. Call this skill before starting coding tasks
+2. Follow the standards and workflow defined here
+3. Check console after every script creation/modification
