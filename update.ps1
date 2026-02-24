@@ -11,6 +11,8 @@ param(
 
 $SKILLS_SOURCE = "$PSScriptRoot\skills"
 $SKILLS_TARGET = "$TargetPath\.claude\skills"
+$SCHEMAS_SOURCE = "$PSScriptRoot\schemas"
+$SCHEMAS_TARGET = "$TargetPath\openspec\schemas"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -72,15 +74,36 @@ Get-ChildItem $SKILLS_SOURCE -Directory | ForEach-Object {
     }
 }
 
+# Update schemas
+$schemasUpdated = 0
+if (Test-Path $SCHEMAS_SOURCE) {
+    Write-Host ""
+    Write-Host "Updating schemas..." -ForegroundColor Yellow
+    Write-Host ""
+
+    if (-not (Test-Path $SCHEMAS_TARGET)) {
+        New-Item -ItemType Directory -Path $SCHEMAS_TARGET -Force | Out-Null
+    }
+
+    Get-ChildItem $SCHEMAS_SOURCE -Directory | ForEach-Object {
+        $schemaName = $_.Name
+        $source = $_.FullName
+
+        Copy-Item -Path $source -Destination $SCHEMAS_TARGET -Recurse -Force
+        Write-Host "  [+] $schemaName (updated)" -ForegroundColor Green
+        $schemasUpdated++
+    }
+}
+
 # Done
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "   Update Complete!" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Updated: $updated skills" -ForegroundColor Green
-Write-Host "Skipped: $skipped skills (unchanged)" -ForegroundColor Gray
+Write-Host "Skills:  $updated updated, $skipped unchanged" -ForegroundColor White
+Write-Host "Schemas: $schemasUpdated updated" -ForegroundColor White
 Write-Host ""
-Write-Host "To force update all skills:" -ForegroundColor White
+Write-Host "To force update all:" -ForegroundColor White
 Write-Host "  & `"update.ps1`" -Force" -ForegroundColor Gray
 Write-Host ""

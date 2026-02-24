@@ -10,6 +10,8 @@ param(
 
 $SKILLS_SOURCE = "$PSScriptRoot\skills"
 $SKILLS_TARGET = "$TargetPath\.claude\skills"
+$SCHEMAS_SOURCE = "$PSScriptRoot\schemas"
+$SCHEMAS_TARGET = "$TargetPath\openspec\schemas"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -65,14 +67,37 @@ Get-ChildItem $SKILLS_SOURCE -Directory | ForEach-Object {
     $installed++
 }
 
+# Copy schemas
+$schemasInstalled = 0
+if (Test-Path $SCHEMAS_SOURCE) {
+    Write-Host ""
+    Write-Host "Installing schemas..." -ForegroundColor Yellow
+    Write-Host ""
+
+    # Create schemas directory if not exists
+    if (-not (Test-Path $SCHEMAS_TARGET)) {
+        New-Item -ItemType Directory -Path $SCHEMAS_TARGET -Force | Out-Null
+    }
+
+    Get-ChildItem $SCHEMAS_SOURCE -Directory | ForEach-Object {
+        $schemaName = $_.Name
+        $source = $_.FullName
+
+        Copy-Item -Path $source -Destination $SCHEMAS_TARGET -Recurse -Force
+        Write-Host "  [+] $schemaName" -ForegroundColor Green
+        $schemasInstalled++
+    }
+}
+
 # Done
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "   Installation Complete!" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Installed $installed skills to:" -ForegroundColor White
-Write-Host "  $SKILLS_TARGET" -ForegroundColor Gray
+Write-Host "Installed:" -ForegroundColor White
+Write-Host "  - $installed skills to $SKILLS_TARGET" -ForegroundColor Gray
+Write-Host "  - $schemasInstalled schemas to $SCHEMAS_TARGET" -ForegroundColor Gray
 Write-Host ""
 Write-Host "To update later, run:" -ForegroundColor White
 Write-Host "  git clone git@github.com:ganlingyao/game-dev-openspec.git `$env:TEMP\gdw" -ForegroundColor Gray

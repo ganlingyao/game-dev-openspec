@@ -1,0 +1,168 @@
+name: game-dev-workflow
+version: 3
+description: 游戏开发工作流 - research → proposal → design → tech-research → specs → tasks
+
+artifacts:
+  - id: research
+    generates: research.md
+    description: 游戏品类调研、竞品分析、风险评估
+    template: research.md
+    instruction: |
+      调研游戏品类，产出 research.md。
+
+      内容包括：
+      - 游戏品类分析：同类游戏的成功要素
+      - 竞品分析：3-5 款类似游戏的核心机制、优缺点
+      - 风险评估：技术风险、设计风险、常见陷阱
+      - 最佳实践：推荐的设计模式和优化策略
+      - 平台考量：目标平台的特定要求
+    requires: []
+
+  - id: proposal
+    generates: proposal.md
+    description: 游戏提案、核心机制、功能清单
+    template: proposal.md
+    instruction: |
+      基于 research.md 创建游戏提案。
+
+      内容包括：
+      - 游戏概念：2-3 句描述核心创意和目标玩家
+      - 核心机制：基础玩法系统及其交互
+      - 功能清单：玩法、UI、音视觉、进度系统
+      - 能力模块：按 kebab-case 分组功能 (player-movement, score-system 等)
+      - 目标平台：平台、配置要求、输入方式
+      - 范围优先级：v1.0 包含什么，推迟什么
+    requires:
+      - research
+
+  - id: design
+    generates: design.md
+    description: 技术架构设计、伪代码
+    template: design.md
+    instruction: |
+      基于 proposal.md 创建技术设计文档。
+
+      内容包括：
+      - 项目架构：目录结构和组织方式
+      - 核心系统设计：每个系统的职责、模式、依赖、伪代码
+      - 组件关系：系统间的数据流和交互
+      - 技术决策：选择、备选方案、理由、权衡
+      - 数据管理：配置、运行时状态、存档方案
+      - 性能考量：对象池、Update 优化
+      - 风险缓解：研究阶段风险的应对措施
+    requires:
+      - proposal
+      - research
+
+  - id: tech-research
+    generates: tech-research.md
+    description: Unity API 验证与映射
+    template: tech-research.md
+    instruction: |
+      验证 design.md 的设计在 Unity 中的可行性。
+
+      内容包括：
+      - Unity 版本推荐：LTS 版本选择和理由
+      - 设计验证：每个系统在 Unity 中是否可行
+      - 伪代码映射：将设计伪代码转换为 Unity C# 代码
+      - 所需 API：按系统列出需要的 Unity API
+      - 第三方包：评估和推荐 Unity 包
+      - 潜在问题：需要调整的设计元素
+      - API 速查表：项目常用 API 快速参考
+    requires:
+      - design
+      - proposal
+
+  - id: specs
+    generates: specs/**/*.md
+    description: 功能规格说明
+    template: spec.md
+    instruction: |
+      为 proposal 中的每个能力模块创建规格文档。
+
+      格式要求：
+      - 每个能力一个文件：specs/<capability>/spec.md
+      - 需求格式：### Requirement: <名称>
+      - 使用 SHALL/MUST 规范性语言
+      - 场景格式：#### Scenario: <名称>，包含 WHEN/THEN
+      - 每个需求至少一个场景
+    requires:
+      - proposal
+      - design
+      - tech-research
+
+  - id: tasks
+    generates: tasks.md
+    description: 实现任务清单
+    template: tasks.md
+    instruction: |
+      创建实现任务清单。
+
+      格式要求：
+      - 按阶段分组：## 编号. 阶段名称
+      - 复选框格式：- [ ] X.Y 任务描述
+      - 按依赖排序：先做什么，后做什么
+      - 引用文档：指明参考 design.md 或 tech-research.md 的哪部分
+
+      **重要：每个系统/功能模块必须包含测试任务**
+
+      每个能力模块的任务组必须以测试任务结尾：
+      - X.n-1 编写单元测试
+      - X.n 运行测试验证 **(test-unity)**
+
+      测试任务标注 **(test-unity)** 表示需要触发 test-unity skill 执行测试。
+      只有测试通过后，才能进入下一个模块的开发。
+
+      建议分组：
+      1. 项目设置
+      2. 核心框架
+         - 2.x 编写核心框架测试
+         - 2.y 运行测试验证 **(test-unity)**
+      3-N. 各能力模块（每个模块结构）
+         - X.1 实现功能 A
+         - X.2 实现功能 B
+         - X.n-1 编写单元测试
+         - X.n 运行测试验证 **(test-unity)**
+      N+1. UI 实现
+      N+2. 音视觉打磨
+      N+3. 集成测试 **(test-unity)**
+      N+4. 构建发布
+    requires:
+      - specs
+      - design
+      - tech-research
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    按 tasks.md 执行实现任务。
+
+    流程：
+    1. 读取当前任务
+    2. 参考 design.md 的伪代码
+    3. 参考 tech-research.md 的 API 映射
+    4. 编写代码（遵循 code-unity skill 规范）
+    5. 验证符合 specs
+    6. 标记任务完成
+
+    **测试任务处理**：
+
+    当遇到标注 **(test-unity)** 的任务时，必须触发 test-unity skill：
+
+    1. 连接 Unity 并检查编译状态
+       - 如果 Unity 无响应，刷新并等待编译
+       - 编译可能需要 20-500 秒
+       - 超时则提示用户等待
+
+    2. 执行测试
+       - 使用 Unity MCP run_tests 启动测试
+       - 使用 get_test_job 获取测试结果
+
+    3. 处理结果
+       - 全部通过：标记任务完成，继续下一个模块
+       - 存在失败：修复代码，重新测试（最多 3 次）
+       - 多次失败：报告用户，等待指示
+
+    **禁止**：在测试任务未通过的情况下进入下一个能力模块的开发。

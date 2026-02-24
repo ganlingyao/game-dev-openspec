@@ -80,15 +80,38 @@ game-dev-openspec/
 ├── README.md
 ├── install.ps1          # 安装脚本
 ├── update.ps1           # 更新脚本
-└── skills/
-    ├── game-dev-debug-unity/
-    ├── game-dev-code-unity/
-    ├── game-dev-design-unity/
-    ├── game-dev-research-game/
-    ├── tech-research-unity/
-    ├── test-unity/
-    └── win-screenshot/
+├── skills/              # Claude Code Skills
+│   ├── game-dev-debug-unity/
+│   ├── game-dev-code-unity/
+│   ├── game-dev-design-unity/
+│   ├── game-dev-research-game/
+│   ├── tech-research-unity/
+│   ├── test-unity/
+│   └── win-screenshot/
+└── schemas/             # OpenSpec Workflow Schemas
+    └── game-dev-workflow/
+        ├── schema.yaml      # 工作流定义
+        └── templates/       # Artifact 模板
+            ├── proposal.md
+            ├── research.md
+            ├── design.md
+            ├── tech-research.md
+            ├── spec.md
+            └── tasks.md
 ```
+
+## Schemas 说明
+
+`game-dev-workflow` schema 定义了游戏开发的工作流阶段：
+
+| 阶段 | Artifact | 用途 |
+|------|----------|------|
+| research | research.md | 游戏市场调研 |
+| proposal | proposal.md | 功能提案 |
+| design | design.md | 架构设计 |
+| tech-research | tech-research.md | 技术可行性验证 |
+| spec | spec.md | 详细规格 |
+| tasks | tasks.md | 实现任务列表 |
 
 ## 许可证
 
