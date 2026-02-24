@@ -1,0 +1,102 @@
+# {{PROJECT_NAME}} Project Standards
+
+## Mandatory Skill Usage Rules
+
+**Core Principle: When a user request matches a Skill's trigger condition, you MUST first call the Skill tool instead of performing the operation directly.**
+
+### Unity Development Skills
+
+| Skill Name | Trigger Keywords | Description |
+|-----------|-----------|------|
+| `game-dev-debug-unity` | **Diagnosis & Fix**: 失效, 无效, 不工作, 没反应, 请修复, 帮我修, 存在问题, 有bug, 不对, 不正确, 和设计不一样, 请完善, 请修正, 检查原因, 为什么, 怎么回事 | Triggered when expected behavior differs from actual behavior; locates root cause and fixes it. |
+| `game-dev-code-unity` | 实现, 编码, 开发, 编写代码 | Code writing standards, unit testing, code review. |
+| `test-unity` | 运行测试, 执行测试, test | Test execution, result analysis. |
+| `game-dev-design-unity` | 设计, 架构, 模块设计 | Project structure design, design pattern application. |
+| `tech-research-unity` | API 研究, 技术可行性 | Unity API verification, technical research. |
+
+### Key Behavior Standards
+
+#### 1. User Interaction Standards
+
+**Scenarios requiring AskUserQuestion:**
+- User needs to manually operate in Unity (click buttons, press keys, etc.)
+- User needs to observe and report results
+- Waiting for user confirmation before proceeding
+
+**Prohibited Behaviors:**
+- Stopping the conversation to let the user "handle it themselves" when user action is needed
+- Skipping AskUserQuestion and assuming the user has completed the operation
+
+#### 2. Skill Invocation Check
+
+Before starting any task, you MUST:
+1. Check if the request matches any Skill's trigger condition
+2. If matched, call the `Skill` tool to execute the corresponding skill
+3. Follow the workflow defined in the skill
+
+#### 2.1 Auto-Trigger Skills During `/opsx:apply`
+
+When executing `/opsx:apply` to implement tasks from tasks.md, you MUST automatically detect and trigger relevant skills:
+
+| Task Keyword | Auto-Trigger Skill | Action |
+|--------------|-------------------|--------|
+| 实现, 编写, 开发, implement, code | `game-dev-code-unity` | Call `Skill("game-dev-code-unity")` before writing code |
+| **(test-unity)** 标注 | `test-unity` | Call `Skill("test-unity")` to run tests |
+| 验证, 测试功能, verify | `game-dev-debug-unity` | Call `Skill("game-dev-debug-unity")` for verification |
+
+**Workflow:**
+```
+/opsx:apply
+  ↓
+Read next task from tasks.md
+  ↓
+Detect keywords in task description
+  ├─ Code keywords → Auto-call Skill("game-dev-code-unity") → Execute under skill guidance
+  ├─ Test keywords → Auto-call Skill("test-unity") → Run tests
+  └─ No match → Execute task directly
+  ↓
+Mark task complete, continue to next
+```
+
+**Important:** This auto-triggering is mandatory. Do NOT skip skill invocation even when inside another workflow like `/opsx:apply`.
+
+#### 3. Common Trigger Word Mapping
+
+**game-dev-debug-unity Trigger (Diagnosis & Fix):**
+
+Chinese:
+- "XX存在问题，请修复" / "XX失效，检查原因并修复"
+- "点击无效" / "没反应" / "不工作" / "功能失效"
+- "和设计不一样" / "未按照策划案执行" / "请完善"
+- "帮我看看" / "什么问题" / "为什么" / "怎么回事"
+- "验证功能" / "测试功能" / "场景设置" / "运行看看"
+
+English:
+- "XX not working, please fix" / "fix this" / "help me check"
+- "doesn't match design" / "not as expected"
+- "verify", "test", "debug", "check", "troubleshoot"
+
+**game-dev-code-unity Trigger:**
+- "实现功能" / "编写代码" / "implement", "code", "develop"
+
+**test-unity Trigger:**
+- "运行测试" / "执行测试" / "run tests"
+
+## Project Conventions
+
+### Directory Structure
+- `Assets/Scripts/` - Game Code
+- `Assets/Prefabs/` - Prefabs
+- `Assets/Scenes/` - Scene Files
+- `Assets/ScriptableObjects/` - Configuration Assets
+- `openspec/` - OpenSpec Specification Files
+
+### Code Standards
+- Namespace: `{{PROJECT_NAMESPACE}}.{ModuleName}`
+- Singleton Pattern: Use `Instance` property, provide `ResetInstance()` test method
+- Event System: Publish/Subscribe via `EventBus` static class
+
+### Test Standards
+- EditMode Tests: `Assets/_Project/Tests/EditMode/`
+- PlayMode Tests: `Assets/_Project/Tests/PlayMode/`
+- Must run `test-unity` verification after completing each feature module

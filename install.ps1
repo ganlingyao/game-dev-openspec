@@ -103,6 +103,35 @@ if (Test-Path $configPath) {
     }
 }
 
+# Copy CLAUDE.md template
+$claudeTemplate = "$PSScriptRoot\CLAUDE.md.template"
+$claudeTarget = "$TargetPath\CLAUDE.md"
+$claudeInstalled = $false
+
+if (Test-Path $claudeTemplate) {
+    Write-Host ""
+    Write-Host "Installing CLAUDE.md..." -ForegroundColor Yellow
+
+    if (Test-Path $claudeTarget) {
+        Write-Host "  [!] CLAUDE.md already exists, skipping" -ForegroundColor Yellow
+        Write-Host "      To update, delete existing file and re-run install" -ForegroundColor Gray
+    }
+    else {
+        # Get project name from folder
+        $projectName = (Get-Item $TargetPath).Name
+        $namespace = $projectName -replace '[^a-zA-Z0-9]', ''
+
+        # Copy and replace placeholders
+        $content = Get-Content $claudeTemplate -Raw
+        $content = $content -replace '\{\{PROJECT_NAME\}\}', $projectName
+        $content = $content -replace '\{\{PROJECT_NAMESPACE\}\}', $namespace
+        Set-Content -Path $claudeTarget -Value $content -NoNewline
+
+        Write-Host "  [+] CLAUDE.md (project: $projectName)" -ForegroundColor Green
+        $claudeInstalled = $true
+    }
+}
+
 # Done
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -113,6 +142,9 @@ Write-Host "Installed:" -ForegroundColor White
 Write-Host "  - $installed skills" -ForegroundColor Gray
 Write-Host "  - $schemasInstalled schemas" -ForegroundColor Gray
 Write-Host "  - Default schema: game-dev-workflow" -ForegroundColor Gray
+if ($claudeInstalled) {
+    Write-Host "  - CLAUDE.md (project instructions)" -ForegroundColor Gray
+}
 Write-Host ""
 Write-Host "To update later, run:" -ForegroundColor White
 Write-Host "  irm https://raw.githubusercontent.com/ganlingyao/game-dev-openspec/main/run.ps1 | iex" -ForegroundColor Cyan

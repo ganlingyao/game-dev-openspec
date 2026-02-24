@@ -65,6 +65,8 @@ game-dev-openspec/
 ├── README.md
 ├── install.ps1          # 安装脚本
 ├── update.ps1           # 更新脚本
+├── run.ps1              # 远程安装脚本
+├── CLAUDE.md.template   # Claude Code 项目指令模板
 ├── skills/              # Claude Code Skills
 │   ├── game-dev-debug-unity/
 │   ├── game-dev-code-unity/
