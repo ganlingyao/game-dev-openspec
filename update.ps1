@@ -1,0 +1,86 @@
+# Game Dev OpenSpec Updater
+# Usage:
+#   git clone git@github.com:ganlingyao/game-dev-openspec.git $env:TEMP\gdw
+#   & "$env:TEMP\gdw\update.ps1"
+#   Remove-Item -Recurse -Force $env:TEMP\gdw
+
+param(
+    [string]$TargetPath = ".",
+    [switch]$Force
+)
+
+$SKILLS_SOURCE = "$PSScriptRoot\skills"
+$SKILLS_TARGET = "$TargetPath\.claude\skills"
+
+Write-Host ""
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "   Game Dev OpenSpec Updater" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Check target exists
+if (-not (Test-Path $SKILLS_TARGET)) {
+    Write-Host "[X] Skills directory not found: $SKILLS_TARGET" -ForegroundColor Red
+    Write-Host "    Run install.ps1 first." -ForegroundColor Yellow
+    exit 1
+}
+
+# Check source skills exist
+if (-not (Test-Path $SKILLS_SOURCE)) {
+    Write-Host "[X] Source skills not found: $SKILLS_SOURCE" -ForegroundColor Red
+    exit 1
+}
+
+# Update skills
+Write-Host "Updating skills..." -ForegroundColor Yellow
+Write-Host ""
+
+$updated = 0
+$skipped = 0
+
+Get-ChildItem $SKILLS_SOURCE -Directory | ForEach-Object {
+    $skillName = $_.Name
+    $source = $_.FullName
+    $target = "$SKILLS_TARGET\$skillName"
+
+    $sourceSkillFile = "$source\SKILL.md"
+    $targetSkillFile = "$target\SKILL.md"
+
+    # Check if update needed (compare modification time or force)
+    $needUpdate = $Force
+
+    if (-not $needUpdate -and (Test-Path $targetSkillFile)) {
+        $sourceTime = (Get-Item $sourceSkillFile).LastWriteTime
+        $targetTime = (Get-Item $targetSkillFile).LastWriteTime
+
+        if ($sourceTime -gt $targetTime) {
+            $needUpdate = $true
+        }
+    }
+    elseif (-not (Test-Path $target)) {
+        $needUpdate = $true
+    }
+
+    if ($needUpdate) {
+        Copy-Item -Path $source -Destination $SKILLS_TARGET -Recurse -Force
+        Write-Host "  [+] $skillName (updated)" -ForegroundColor Green
+        $updated++
+    }
+    else {
+        Write-Host "  [-] $skillName (unchanged)" -ForegroundColor Gray
+        $skipped++
+    }
+}
+
+# Done
+Write-Host ""
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "   Update Complete!" -ForegroundColor Green
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Updated: $updated skills" -ForegroundColor Green
+Write-Host "Skipped: $skipped skills (unchanged)" -ForegroundColor Gray
+Write-Host ""
+Write-Host "To force update all skills:" -ForegroundColor White
+Write-Host "  & `"update.ps1`" -Force" -ForegroundColor Gray
+Write-Host ""

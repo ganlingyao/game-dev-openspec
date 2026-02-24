@@ -1,0 +1,14 @@
+# Temporary files
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Test screenshots (keep only the tool, not test outputs)
+skills/win-screenshot/screenshot*.png
