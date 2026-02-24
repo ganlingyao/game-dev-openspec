@@ -1,6 +1,5 @@
-# Game Dev OpenSpec - Remote Runner
-# 用法: gh api repos/ganlingyao/game-dev-openspec/contents/run.ps1 --jq '.content' | % { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) } | iex
-# 或简化: irm https://raw.githubusercontent.com/ganlingyao/game-dev-openspec/main/run.ps1 | iex  (仅公开仓库)
+# Game Dev OpenSpec - One-Line Installer
+# 用法: irm https://raw.githubusercontent.com/ganlingyao/game-dev-openspec/main/run.ps1 | iex
 
 param(
     [ValidateSet("install", "update")]
@@ -8,30 +7,29 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$REPO = "ganlingyao/game-dev-openspec"
+$REPO_URL = "https://github.com/ganlingyao/game-dev-openspec/archive/refs/heads/main.zip"
 $TEMP_DIR = "$env:TEMP\game-dev-openspec-$(Get-Random)"
 
 Write-Host ""
-Write-Host "Game Dev OpenSpec - Remote $Action" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "  Game Dev OpenSpec - $Action" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 try {
-    # 下载仓库 zip
-    Write-Host "[1/4] Downloading repository..." -ForegroundColor Yellow
+    # 下载
+    Write-Host "[1/4] Downloading..." -ForegroundColor Yellow
     $zipPath = "$TEMP_DIR.zip"
-    gh api "repos/$REPO/zipball" -H "Accept: application/vnd.github+json" > $zipPath
+    Invoke-WebRequest -Uri $REPO_URL -OutFile $zipPath -UseBasicParsing
 
     # 解压
     Write-Host "[2/4] Extracting..." -ForegroundColor Yellow
     Expand-Archive -Path $zipPath -DestinationPath $TEMP_DIR -Force
-
-    # 找到解压后的目录（GitHub zip 会创建一个带 commit hash 的子目录）
     $extractedDir = (Get-ChildItem $TEMP_DIR -Directory)[0].FullName
 
-    # 执行安装或更新脚本
-    Write-Host "[3/4] Running $Action script..." -ForegroundColor Yellow
-    $scriptPath = Join-Path $extractedDir "$Action.ps1"
-    & $scriptPath -TargetPath (Get-Location).Path
+    # 执行
+    Write-Host "[3/4] Running $Action..." -ForegroundColor Yellow
+    & "$extractedDir\$Action.ps1" -TargetPath (Get-Location).Path
 
     # 清理
     Write-Host "[4/4] Cleaning up..." -ForegroundColor Yellow
@@ -42,8 +40,8 @@ try {
     Write-Host "Done!" -ForegroundColor Green
 }
 catch {
+    Write-Host ""
     Write-Host "Error: $_" -ForegroundColor Red
-    # 清理
     Remove-Item "$TEMP_DIR.zip" -Force -ErrorAction SilentlyContinue
     Remove-Item $TEMP_DIR -Recurse -Force -ErrorAction SilentlyContinue
     exit 1

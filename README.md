@@ -18,31 +18,16 @@ openspec init
 
 ## 安装
 
-**方式 1：一行命令（推荐）**
 ```powershell
 # 进入项目目录后执行
-& ([scriptblock]::Create((gh api repos/ganlingyao/game-dev-openspec/contents/run.ps1 --jq '.content' | % { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) })))
-```
-
-**方式 2：手动执行**
-```powershell
-gh repo clone ganlingyao/game-dev-openspec $env:TEMP\gdw -- --depth 1
-& "$env:TEMP\gdw\install.ps1"
-Remove-Item -Recurse -Force $env:TEMP\gdw
+irm https://raw.githubusercontent.com/ganlingyao/game-dev-openspec/main/run.ps1 | iex
 ```
 
 ## 更新
 
-**方式 1：一行命令**
 ```powershell
-& ([scriptblock]::Create((gh api repos/ganlingyao/game-dev-openspec/contents/run.ps1 --jq '.content' | % { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) }))) -Action update
-```
-
-**方式 2：手动执行**
-```powershell
-gh repo clone ganlingyao/game-dev-openspec $env:TEMP\gdw -- --depth 1
-& "$env:TEMP\gdw\update.ps1"
-Remove-Item -Recurse -Force $env:TEMP\gdw
+# 进入项目目录后执行
+iex "& { $(irm https://raw.githubusercontent.com/ganlingyao/game-dev-openspec/main/run.ps1) } -Action update"
 ```
 
 ## 包含的 Skills
