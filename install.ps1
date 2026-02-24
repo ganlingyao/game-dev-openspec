@@ -89,6 +89,20 @@ if (Test-Path $SCHEMAS_SOURCE) {
     }
 }
 
+# Update config.yaml to use game-dev-workflow as default schema
+$configPath = "$TargetPath\openspec\config.yaml"
+if (Test-Path $configPath) {
+    Write-Host ""
+    Write-Host "Updating config.yaml..." -ForegroundColor Yellow
+
+    $configContent = Get-Content $configPath -Raw
+    if ($configContent -match "schema:\s*\S+") {
+        $configContent = $configContent -replace "schema:\s*\S+", "schema: game-dev-workflow"
+        Set-Content -Path $configPath -Value $configContent -NoNewline
+        Write-Host "  [+] Set default schema to game-dev-workflow" -ForegroundColor Green
+    }
+}
+
 # Done
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -96,11 +110,10 @@ Write-Host "   Installation Complete!" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Installed:" -ForegroundColor White
-Write-Host "  - $installed skills to $SKILLS_TARGET" -ForegroundColor Gray
-Write-Host "  - $schemasInstalled schemas to $SCHEMAS_TARGET" -ForegroundColor Gray
+Write-Host "  - $installed skills" -ForegroundColor Gray
+Write-Host "  - $schemasInstalled schemas" -ForegroundColor Gray
+Write-Host "  - Default schema: game-dev-workflow" -ForegroundColor Gray
 Write-Host ""
 Write-Host "To update later, run:" -ForegroundColor White
-Write-Host "  git clone git@github.com:ganlingyao/game-dev-openspec.git `$env:TEMP\gdw" -ForegroundColor Gray
-Write-Host "  & `"`$env:TEMP\gdw\update.ps1`"" -ForegroundColor Gray
-Write-Host "  Remove-Item -Recurse -Force `$env:TEMP\gdw" -ForegroundColor Gray
+Write-Host "  irm https://raw.githubusercontent.com/ganlingyao/game-dev-openspec/main/run.ps1 | iex" -ForegroundColor Cyan
 Write-Host ""
