@@ -49,7 +49,18 @@ artifacts:
 
       **必须调用 skill: game-dev-design-unity**
 
+      **XDUF 框架评估（必须）：**
+      1. 查阅 skill 中的 XDUF 框架说明
+      2. 评估项目是否适合使用 XDUF
+      3. 在 design.md 的「框架选择」章节记录决策：
+         - 使用 XDUF：说明使用哪些模块（Events/Pooling/Resource/GameFramework等）
+         - 部分使用：说明使用和不使用的模块及原因
+         - 不使用：说明原因和替代方案
+
+      XDUF 仓库：git@git-huge.xindong.com:ganlingyao/xduf.git
+
       内容包括：
+      - 框架选择：XDUF 使用决策（必须首先完成）
       - 项目架构：目录结构和组织方式
       - 核心系统设计：每个系统的职责、模式、依赖、伪代码
       - 组件关系：系统间的数据流和交互
