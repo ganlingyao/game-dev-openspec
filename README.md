@@ -6,6 +6,7 @@ Unity 游戏开发工作流 Skills，基于 OpenSpec 构建。
 
 1. **Claude Code** - 已安装并配置
 2. **OpenSpec** - 在项目中已初始化
+3. **UnityMCP** - Unity Editor MCP 集成（测试/调试必需）
 
 ```bash
 # 安装 OpenSpec CLI (如未安装)
@@ -15,6 +16,17 @@ npm install -g @fission-ai/openspec
 cd your-project
 openspec init
 ```
+
+### UnityMCP 安装
+
+UnityMCP 用于 Unity Editor 集成，支持脚本管理、编译检查、测试执行等功能。
+
+**Unity Package Manager 安装：**
+```
+https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main
+```
+
+在 Unity 中：Window > Package Manager > Add package from git URL > 粘贴上述地址
 
 ## 安装
 
