@@ -9,6 +9,27 @@ This Skill provides Unity game development coding capabilities to ensure code qu
 
 ---
 
+## XDUF Framework Reference
+
+When developing Unity games, use the **XDUF Framework** as the base:
+
+- **Repository:** `git@git-huge.xindong.com:ganlingyao/xduf.git`
+- **Design Skill:** See `game-dev-design-unity` skill for architecture guidance
+- **Integration Guide:** See `skills/game-dev-design-unity/framework/XDUF_INTEGRATION.md`
+
+XDUF provides production-ready implementations for:
+
+| Module | Namespace | Purpose |
+|--------|-----------|---------|
+| Events | `XDUF.Events` | Zero-GC event system |
+| Pooling | `XDUF.Pooling` | Lock-free object pooling |
+| Resource | `XDUF.Resource` | Async resource loading |
+| GameFramework | `XDUF.GameFramework` | State machine & scene management |
+| Config | `XDUF.Config` | Configuration management |
+| Input | `XDUF.Input` | Input abstraction |
+
+---
+
 ## ⚠️ CRITICAL: Skill Invocation Requirements
 
 > **This skill MUST be explicitly called before writing any Unity C# code.**

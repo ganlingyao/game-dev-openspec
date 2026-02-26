@@ -1,0 +1,231 @@
+/*
+ * File:      FrameworkInitializer.cs
+ * Author:    [YOUR_NAME]
+ * Date:      [DATE]
+ * Version:   1.0
+ *
+ * Description:
+ *   XDUF Framework initialization entry point.
+ *   Manages lifecycle of all framework services.
+ *
+ * Usage:
+ *   1. Add this script to a GameObject in your boot scene
+ *   2. Configure the serialized fields in Inspector
+ *   3. The framework will auto-initialize on Awake
+ *
+ * History:
+ *   1.0 ([DATE]) - Initial creation from XDUF template.
+ */
+
+using System;
+using UnityEngine;
+using XDUF;
+using XDUF.Events;
+using XDUF.Config;
+using XDUF.Resource;
+using XDUF.Pooling;
+using XDUF.GameFramework;
+using XDUF.Input;
+
+namespace [YOUR_NAMESPACE]
+{
+    /// <summary>
+    /// XDUF Framework initialization and lifecycle management.
+    /// </summary>
+    public class FrameworkInitializer : MonoBehaviour
+    {
+        #region Serialized Fields
+
+        [Header("Pool Configuration")]
+        [SerializeField]
+        [Tooltip("Configuration for object pooling system")]
+        private PoolConfiguration _poolConfig;
+
+        [Header("Resource Configuration")]
+        [SerializeField]
+        [Tooltip("Settings for resource loading system")]
+        private ResourceSettings _resourceSettings;
+
+        [Header("Debug")]
+        [SerializeField]
+        [Tooltip("Enable verbose logging for all systems")]
+        private bool _isVerboseLoggingEnabled;
+
+        #endregion
+
+        #region Private Fields
+
+        private IEventManager _eventManager;
+        private IConfigManager _configManager;
+        private IPoolingService _poolingService;
+        private IResourceManager _resourceManager;
+        private IInputService _inputService;
+        private ISceneLoader _sceneLoader;
+        private IGameManager _gameManager;
+
+        private static FrameworkInitializer _instance;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the singleton instance.
+        /// </summary>
+        public static FrameworkInitializer Instance => _instance;
+
+        /// <summary>
+        /// Gets the event manager service.
+        /// </summary>
+        public IEventManager Events => _eventManager;
+
+        /// <summary>
+        /// Gets the pooling service.
+        /// </summary>
+        public IPoolingService Pooling => _poolingService;
+
+        /// <summary>
+        /// Gets the resource manager service.
+        /// </summary>
+        public IResourceManager Resources => _resourceManager;
+
+        /// <summary>
+        /// Gets the game manager service.
+        /// </summary>
+        public IGameManager Game => _gameManager;
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void Awake()
+        {
+            if (_instance != null && _instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            InitializeFramework();
+        }
+
+        private void Update()
+        {
+            _inputService?.Update();
+        }
+
+        private void OnDestroy()
+        {
+            if (_instance == this)
+            {
+                ShutdownFramework();
+                _instance = null;
+            }
+        }
+
+        #endregion
+
+        #region Initialization
+
+        private void InitializeFramework()
+        {
+            Debug.Log("[Framework] Initializing XDUF Framework...");
+
+            // 1. Event Manager (no dependencies)
+            _eventManager = new EventManager();
+            _eventManager.Initialize();
+
+            // 2. Config Manager
+            _configManager = ConfigManager.Instance;
+            _configManager.Initialize();
+
+            // 3. Pooling Service
+            _poolingService = new PoolingService(_poolConfig ?? new PoolConfiguration());
+            _poolingService.Initialize();
+
+            // 4. Resource Manager
+            _resourceSettings ??= new ResourceSettings();
+            _resourceSettings.IsVerboseLoggingEnabled = _isVerboseLoggingEnabled;
+            ResourceManager.Configure(null, _resourceSettings);
+            _resourceManager = ResourceManager.Instance;
+            _resourceManager.Initialize();
+
+            // 5. Input Service
+            _inputService = new DefaultInputService(_eventManager);
+
+            // 6. Scene Loader
+            _sceneLoader = new SceneLoader(_eventManager, this);
+            _sceneLoader.Initialize();
+
+            // 7. Game Manager
+            _gameManager = new GameManager(_eventManager, _sceneLoader, MapStateToScene);
+            _gameManager.Initialize();
+
+            Debug.Log("[Framework] XDUF Framework initialization complete.");
+        }
+
+        private void ShutdownFramework()
+        {
+            Debug.Log("[Framework] Shutting down XDUF Framework...");
+
+            _gameManager?.Shutdown();
+            _sceneLoader?.Shutdown();
+            _resourceManager?.Shutdown();
+            _poolingService?.Shutdown();
+            _configManager?.Shutdown();
+            _eventManager?.Shutdown();
+
+            Debug.Log("[Framework] XDUF Framework shutdown complete.");
+        }
+
+        #endregion
+
+        #region Scene Mapping
+
+        /// <summary>
+        /// Maps game states to scene names. Customize for your project.
+        /// </summary>
+        protected virtual string MapStateToScene(GameState state)
+        {
+            return state switch
+            {
+                GameState.Boot => "",
+                GameState.MainMenu => "MainMenuScene",   // TODO: Update
+                GameState.InGame => "GameScene",         // TODO: Update
+                GameState.Paused => "",
+                GameState.Result => "ResultScene",       // TODO: Update
+                _ => ""
+            };
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Transitions to a new game state.
+        /// </summary>
+        public void ChangeGameState(GameState newState)
+        {
+            _gameManager?.ChangeState(newState);
+        }
+
+        /// <summary>
+        /// Registers a prefab for object pooling.
+        /// </summary>
+        public void RegisterPooledPrefab(string poolKey, GameObject prefab, int prewarmCount = 0)
+        {
+            _poolingService?.RegisterPrefab(poolKey, prefab);
+
+            if (prewarmCount > 0)
+            {
+                StartCoroutine(_poolingService.PrewarmCoroutine(poolKey, prewarmCount));
+            }
+        }
+
+        #endregion
+    }
+}

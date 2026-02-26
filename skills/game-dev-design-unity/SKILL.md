@@ -9,6 +9,55 @@ This Skill provides Unity game architecture design capabilities, including proje
 
 ---
 
+## XDUF Framework (Recommended Base Framework)
+
+**Repository:** `git@git-huge.xindong.com:ganlingyao/xduf.git`
+
+XDUF (XD Unity Framework) is a production-ready, modular framework with:
+- **174 unit tests** with 100% pass rate
+- **Zero-GC event system** for high-performance messaging
+- **Lock-free object pooling** with leak detection
+- **Async resource loading** with reference counting
+- **Game state machine** with scene management
+
+### Framework Modules
+
+| Module | Namespace | Purpose |
+|--------|-----------|---------|
+| Core | `XDUF` | Base interfaces (`IManager`) |
+| Events | `XDUF.Events` | Type-safe pub/sub event bus |
+| Config | `XDUF.Config` | JSON/ScriptableObject configuration |
+| Resource | `XDUF.Resource` | Async resource loading with caching |
+| Pooling | `XDUF.Pooling` | Object pooling with diagnostics |
+| GameFramework | `XDUF.GameFramework` | Game state machine, scene loading |
+| Input | `XDUF.Input` | Input abstraction layer |
+| Diagnostics | `XDUF.Diagnostics` | Logging system |
+
+### Integration Strategies
+
+| Level | Strategy | When to Use |
+|-------|----------|-------------|
+| **L1** | Direct Integration | New projects - clone as base |
+| **L2** | Selective Adoption | Existing projects - integrate specific modules |
+| **L3** | Reference Implementation | Special requirements - study patterns only |
+
+### Quick Start
+
+```bash
+# Clone XDUF as project base
+git clone git@git-huge.xindong.com:ganlingyao/xduf.git MyProject
+
+# Or add as submodule
+git submodule add git@git-huge.xindong.com:ganlingyao/xduf.git Assets/XDUF
+```
+
+See detailed guides:
+- [XDUF_INTEGRATION.md](./framework/XDUF_INTEGRATION.md) - Complete integration guide
+- [PATTERNS.md](./framework/PATTERNS.md) - Design patterns reference
+- [MIGRATION.md](./framework/MIGRATION.md) - Migration strategies
+
+---
+
 ## Part 1: Project Architecture Template
 
 ### Unity Project Structure (Feature-Based)
