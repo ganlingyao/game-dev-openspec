@@ -1,6 +1,6 @@
 ---
-name: research-game
-description: Game market research capability. Used for game genre analysis, competitor research, risk assessment, and best practices collection. Automatically triggered during the research phase.
+name: game-dev-research
+description: Researches game market including genre analysis, competitor analysis, risk assessment, and best practices. Use during game research phase.
 ---
 
 # Research Game Skill - Game Market Research

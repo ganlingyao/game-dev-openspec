@@ -1,5 +1,5 @@
 ---
-name: test-unity
+name: game-dev-u3d-test
 description: Unity 测试执行能力。负责编译检查、测试执行、结果处理。
 ---
 

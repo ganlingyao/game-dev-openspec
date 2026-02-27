@@ -8,11 +8,11 @@
 
 | Skill Name | Trigger Keywords | Description |
 |-----------|-----------|------|
-| `game-dev-debug-unity` | **Diagnosis & Fix**: 失效, 无效, 不工作, 没反应, 请修复, 帮我修, 存在问题, 有bug, 不对, 不正确, 和设计不一样, 请完善, 请修正, 检查原因, 为什么, 怎么回事 | Triggered when expected behavior differs from actual behavior; locates root cause and fixes it. |
-| `game-dev-code-unity` | 实现, 编码, 开发, 编写代码 | Code writing standards, unit testing, code review. |
-| `test-unity` | 运行测试, 执行测试, test | Test execution, result analysis. |
-| `game-dev-design-unity` | 设计, 架构, 模块设计 | Project structure design, design pattern application. |
-| `tech-research-unity` | API 研究, 技术可行性 | Unity API verification, technical research. |
+| `game-dev-u3d-debug` | **Diagnosis & Fix**: 失效, 无效, 不工作, 没反应, 请修复, 帮我修, 存在问题, 有bug, 不对, 不正确, 和设计不一样, 请完善, 请修正, 检查原因, 为什么, 怎么回事 | Triggered when expected behavior differs from actual behavior; locates root cause and fixes it. |
+| `game-dev-u3d-code` | 实现, 编码, 开发, 编写代码 | Code writing standards, unit testing, code review. |
+| `game-dev-u3d-test` | 运行测试, 执行测试, test | Test execution, result analysis. |
+| `game-dev-u3d-design` | 设计, 架构, 模块设计 | Project structure design, design pattern application. |
+| `game-dev-tech-research` | API 研究, 技术可行性 | Unity API verification, technical research. |
 
 ### Key Behavior Standards
 
@@ -40,9 +40,9 @@ When executing `/opsx:apply` to implement tasks from tasks.md, you MUST automati
 
 | Task Keyword | Auto-Trigger Skill | Action |
 |--------------|-------------------|--------|
-| 实现, 编写, 开发, implement, code | `game-dev-code-unity` | Call `Skill("game-dev-code-unity")` before writing code |
-| **(test-unity)** 标注 | `test-unity` | Call `Skill("test-unity")` to run tests |
-| 验证, 测试功能, verify | `game-dev-debug-unity` | Call `Skill("game-dev-debug-unity")` for verification |
+| 实现, 编写, 开发, implement, code | `game-dev-u3d-code` | Call `Skill("game-dev-u3d-code")` before writing code |
+| **(game-dev-u3d-test)** 标注 | `game-dev-u3d-test` | Call `Skill("game-dev-u3d-test")` to run tests |
+| 验证, 测试功能, verify | `game-dev-u3d-debug` | Call `Skill("game-dev-u3d-debug")` for verification |
 
 **Workflow:**
 ```
@@ -51,8 +51,8 @@ When executing `/opsx:apply` to implement tasks from tasks.md, you MUST automati
 Read next task from tasks.md
   ↓
 Detect keywords in task description
-  ├─ Code keywords → Auto-call Skill("game-dev-code-unity") → Execute under skill guidance
-  ├─ Test keywords → Auto-call Skill("test-unity") → Run tests
+  ├─ Code keywords → Auto-call Skill("game-dev-u3d-code") → Execute under skill guidance
+  ├─ Test keywords → Auto-call Skill("game-dev-u3d-test") → Run tests
   └─ No match → Execute task directly
   ↓
 Mark task complete, continue to next
@@ -62,7 +62,7 @@ Mark task complete, continue to next
 
 #### 3. Common Trigger Word Mapping
 
-**game-dev-debug-unity Trigger (Diagnosis & Fix):**
+**game-dev-u3d-debug Trigger (Diagnosis & Fix):**
 
 Chinese:
 - "XX存在问题，请修复" / "XX失效，检查原因并修复"
@@ -76,10 +76,10 @@ English:
 - "doesn't match design" / "not as expected"
 - "verify", "test", "debug", "check", "troubleshoot"
 
-**game-dev-code-unity Trigger:**
+**game-dev-u3d-code Trigger:**
 - "实现功能" / "编写代码" / "implement", "code", "develop"
 
-**test-unity Trigger:**
+**game-dev-u3d-test Trigger:**
 - "运行测试" / "执行测试" / "run tests"
 
 ## Project Conventions
@@ -99,4 +99,4 @@ English:
 ### Test Standards
 - EditMode Tests: `Assets/_Project/Tests/EditMode/`
 - PlayMode Tests: `Assets/_Project/Tests/PlayMode/`
-- Must run `test-unity` verification after completing each feature module
+- Must run `game-dev-u3d-test` verification after completing each feature module

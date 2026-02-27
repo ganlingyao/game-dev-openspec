@@ -4,6 +4,55 @@ Complete guide for integrating XDUF framework into Unity projects.
 
 ---
 
+## Recommended Workflow (L1 Selective Integration)
+
+For projects that only need specific XDUF modules (e.g., Events, Pooling), use this workflow instead of Git Submodule to avoid importing the entire XDUF Unity project.
+
+### Step 1: Clone XDUF to Parent Directory
+
+```bash
+# Clone XDUF outside the project directory (not inside Assets/)
+cd <project-parent-directory>
+git clone git@git-huge.xindong.com:ganlingyao/xduf.git XDUF
+```
+
+Example directory structure after cloning:
+```
+D:\Work\
+├── Plants\          # Your Unity project
+└── XDUF\            # XDUF source (not tracked by your project)
+    └── Assets\
+        └── Framework\
+            ├── Events\
+            ├── Pooling\
+            ├── Resource\
+            └── ...
+```
+
+### Step 2: Copy Only Required Modules
+
+```bash
+# Copy only the modules you need
+cp -r ../XDUF/Assets/Framework/Core     Assets/Plugins/XDUF/Core
+cp -r ../XDUF/Assets/Framework/Events   Assets/Plugins/XDUF/Events
+cp -r ../XDUF/Assets/Framework/Pooling  Assets/Plugins/XDUF/Pooling
+```
+
+### Step 3: Update Assembly Definitions
+
+Create or modify `Assets/Plugins/XDUF/XDUF.asmdef` to include only the modules you copied.
+
+### When to Update
+
+When you need newer XDUF features:
+```bash
+cd ../XDUF
+git pull
+# Then re-copy required modules
+```
+
+---
+
 ## Prerequisites
 
 - Unity 2021.3 LTS or higher

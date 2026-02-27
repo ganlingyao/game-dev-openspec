@@ -1,5 +1,5 @@
 ---
-name: tech-research-unity
+name: game-dev-tech-research
 description: Unity API 技术调研能力。验证 design.md 中的设计在 Unity 中的可行性，将伪代码映射到真实 Unity API。必须使用 unity-csharp-explorer 工具验证每个 API。自动在 tech-research 阶段触发。
 ---
 
@@ -24,7 +24,7 @@ Used for the **tech-research phase** of the openspec workflow, producing `tech-r
 
 ### unity-csharp-explorer Usage
 
-See [tools/unity-csharp-explorer.md](tools/unity-csharp-explorer.md)
+See [reference/unity-csharp-explorer.md](reference/unity-csharp-explorer.md)
 
 ```
 Task Tool Parameters:
