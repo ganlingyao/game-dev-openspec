@@ -13,6 +13,7 @@ $SKILLS_SOURCE = "$PSScriptRoot\skills"
 $SKILLS_TARGET = "$TargetPath\.claude\skills"
 $SCHEMAS_SOURCE = "$PSScriptRoot\schemas"
 $SCHEMAS_TARGET = "$TargetPath\openspec\schemas"
+$AGENTS_TARGET = "$TargetPath\.claude\agents"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -74,6 +75,40 @@ Get-ChildItem $SKILLS_SOURCE -Directory | ForEach-Object {
     }
 }
 
+# Update agents
+Write-Host ""
+Write-Host "Updating agents..." -ForegroundColor Yellow
+Write-Host ""
+
+$agentsUpdated = 0
+$agentFile = "$AGENTS_TARGET\unity-csharp-explorer.md"
+
+if (-not (Test-Path $AGENTS_TARGET)) {
+    New-Item -ItemType Directory -Path $AGENTS_TARGET -Force | Out-Null
+}
+
+try {
+    # Get latest tag from unity-csharp-explorer repo
+    $tagsUrl = "https://api.github.com/repos/zhing2006/unity-csharp-explorer/tags"
+    $tags = Invoke-RestMethod -Uri $tagsUrl -Headers @{ "User-Agent" = "PowerShell" } -ErrorAction Stop
+    
+    if ($tags.Count -gt 0) {
+        $latestTag = $tags[0].name
+        $agentUrl = "https://raw.githubusercontent.com/zhing2006/unity-csharp-explorer/$latestTag/.claude/agents/unity-csharp-explorer.md"
+    }
+    else {
+        $latestTag = "main"
+        $agentUrl = "https://raw.githubusercontent.com/zhing2006/unity-csharp-explorer/main/.claude/agents/unity-csharp-explorer.md"
+    }
+    
+    Invoke-WebRequest -Uri $agentUrl -OutFile $agentFile -ErrorAction Stop
+    Write-Host "  [+] unity-csharp-explorer ($latestTag)" -ForegroundColor Green
+    $agentsUpdated++
+}
+catch {
+    Write-Host "  [!] unity-csharp-explorer (update failed: $_)" -ForegroundColor Yellow
+}
+
 # Update schemas
 $schemasUpdated = 0
 if (Test-Path $SCHEMAS_SOURCE) {
@@ -102,8 +137,13 @@ Write-Host "   Update Complete!" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Skills:  $updated updated, $skipped unchanged" -ForegroundColor White
+Write-Host "Agents:  $agentsUpdated updated" -ForegroundColor White
 Write-Host "Schemas: $schemasUpdated updated" -ForegroundColor White
 Write-Host ""
+if ($agentsUpdated -gt 0) {
+    Write-Host "[!] IMPORTANT: Restart Claude Code to activate updated agents" -ForegroundColor Yellow
+    Write-Host ""
+}
 Write-Host "To force update all:" -ForegroundColor White
 Write-Host "  & `"update.ps1`" -Force" -ForegroundColor Gray
 Write-Host ""

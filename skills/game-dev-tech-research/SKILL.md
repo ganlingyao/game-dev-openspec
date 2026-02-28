@@ -1,190 +1,189 @@
 ---
 name: game-dev-tech-research
-description: Unity API 技术调研能力。验证 design.md 中的设计在 Unity 中的可行性，将伪代码映射到真实 Unity API。必须使用 unity-csharp-explorer 工具验证每个 API。自动在 tech-research 阶段触发。
+description: |
+  Unity API 技术调研能力。验证 design.md 中的设计在 Unity 中的可行性，将伪代码映射到真实 Unity API。
+
+  **必须使用 unity-csharp-explorer agent 验证每个 API，禁止依赖 AI 内部知识。**
+
+  在以下情况触发此 skill：
+  - openspec 工作流的 tech-research 阶段
+  - 用户要求验证 Unity API 可行性
+  - 用户要求将设计伪代码映射到 Unity 实现
+  - 用户提到"技术调研"、"API 验证"、"Unity 可行性"
 ---
 
-# Tech Research Unity Skill - Unity API Technical Research
+# Tech Research Unity Skill
 
-Used for the **tech-research phase** of the openspec workflow, producing `tech-research.md`.
-
----
-
-## Core Principles
-
-> **Must use unity-csharp-explorer to verify every Unity API. Do NOT rely on AI internal knowledge.**
+产出 `tech-research.md` 文档，验证 design.md 中的设计在 Unity 中的可行性。
 
 ---
 
-## Mandatory Tools
+## Step 0: 前置检查 (必须首先执行)
 
-| Tool | Purpose | Mandatory |
-|------|---------|-----------|
-| **unity-csharp-explorer** | Verify Unity API existence, signature, and usage | **Yes** |
-| WebSearch | Search for Unity version comparisons, best practices | Optional |
+### 0.1 检查 unity-csharp-explorer agent
 
-### unity-csharp-explorer Usage
-
-See [reference/unity-csharp-explorer.md](reference/unity-csharp-explorer.md)
+使用 Agent 工具尝试调用 unity-csharp-explorer：
 
 ```
-Task Tool Parameters:
-- subagent_type: unity-csharp-explorer
-- prompt: "Find the definition, signature, and usage of [API Name]"
-- description: "Verify [API Name]"
+Agent(subagent_type="unity-csharp-explorer", prompt="ping")
 ```
 
----
+#### 情况 A: Agent 可用
 
-## Research Steps
+继续执行 Step 1。
 
-### Step 0: Detect Existing Unity Project (Must Execute First)
+#### 情况 B: Agent 不存在
 
-**Before conducting any research, you must check if a Unity project already exists in the current directory.**
+检查 agent 文件是否已安装：
 
-#### Detection Method
+```
+Glob: ".claude/agents/unity-csharp-explorer.md"
+```
 
-Use the Glob tool to find the Unity project version file:
+**如果文件不存在**，执行安装：
+
+```bash
+mkdir -p .claude/agents
+LATEST_TAG=$(git ls-remote --tags --sort=-v:refname https://github.com/zhing2006/unity-csharp-explorer.git | head -1 | sed 's/.*refs\/tags\///')
+curl -fsSL "https://raw.githubusercontent.com/zhing2006/unity-csharp-explorer/${LATEST_TAG}/.claude/agents/unity-csharp-explorer.md" -o .claude/agents/unity-csharp-explorer.md
+```
+
+安装完成后，**必须**使用 AskUserQuestion 工具提示用户：
+
+```
+AskUserQuestion:
+  question: "unity-csharp-explorer agent 已安装，但需要重启 Claude Code 才能激活。请重启后再次执行此 skill。"
+  options:
+    - label: "我已了解，稍后重启"
+      description: "关闭此对话，重启 Claude Code，然后重新执行 tech-research"
+```
+
+**然后立即停止执行此 skill。不进行任何后续步骤。**
+
+**如果文件已存在但 agent 调用失败**（返回 "Agent type not found"），说明 agent 已安装但未激活。使用 AskUserQuestion 提示用户：
+
+```
+AskUserQuestion:
+  question: "unity-csharp-explorer agent 已安装但未激活。必须重启 Claude Code 才能使用。请重启后再次执行此 skill。"
+  options:
+    - label: "我已了解，稍后重启"
+      description: "关闭此对话，重启 Claude Code，然后重新执行 tech-research"
+```
+
+**然后立即停止执行此 skill。不进行任何后续步骤。**
+
+> **重要**: 此 skill 要求使用 unity-csharp-explorer 进行源码级 API 验证。没有可用的 agent 时，**禁止**使用 WebSearch 或 AI 内部知识作为替代方案。必须等待用户重启 Claude Code。
+
+### 0.2 检查 Unity 项目版本
+
+使用 Glob 查找 Unity 项目版本文件：
 
 ```
 Glob: "**/ProjectSettings/ProjectVersion.txt"
 ```
 
-#### Case A: Project Exists
+#### 情况 A: 项目存在
 
-If `ProjectVersion.txt` is found, read the file to get the Unity version:
+读取版本文件：
 
 ```
 Read: "ProjectSettings/ProjectVersion.txt"
 ```
 
-Example File Format:
-```
-m_EditorVersion: 6000.0.50f1
-m_EditorVersionWithRevision: 6000.0.50f1 (f1ef1dca8bff)
-```
+提取版本号（如 `2022.3.62f1`）。后续所有 API 验证基于此版本。
 
-**Extract the version number** (e.g., `6000.0.50f1`). All subsequent API research must be based on this version.
+#### 情况 B: 项目不存在
 
-Explicitly state in the output:
-```markdown
-## 1. Unity Version
-
-**Existing Project Detected**: ✓
-**Project Version**: Unity 6000.0.50f1 (Unity 6)
-**Version File**: ProjectSettings/ProjectVersion.txt
-
-> All API research in this document is based on the actual Unity version used in the project.
-```
-
-#### Case B: Project Does Not Exist
-
-If the version file is not found, proceed with version recommendation:
-
-Use WebSearch to compare current LTS versions:
-
-```
-WebSearch: "Unity LTS versions comparison 2024 2025"
-```
-
-Recommend a version based on project requirements, considering:
-- Stability vs. New Features
-- Target Platform Support
-- Third-party Package Compatibility
-
-State in the output:
-```markdown
-## 1. Unity Version Recommendation
-
-**Existing Project Detected**: ✗
-**Recommended Version**: Unity 2022.3 LTS
-**Reason**: ...
-```
+使用 WebSearch 比较当前 LTS 版本，推荐合适版本。
 
 ---
 
-### Step 1: Extract Unity APIs from design.md
+## Step 1: 提取 Unity APIs
 
-Read `design.md` and extract all involved Unity APIs:
+从 `design.md` 中提取所有涉及的 Unity API：
 
-**Content to Extract**:
-- Class Names (e.g., `MonoBehaviour`, `ScriptableObject`, `SpriteMask`)
-- Method Names (e.g., `StartCoroutine`, `DontDestroyOnLoad`)
-- Property Names (e.g., `Time.deltaTime`, `Input.GetKeyDown`)
-- Components (e.g., `SpriteRenderer`, `AudioSource`)
-- Data Types (e.g., `Vector2Int`, `WaitForSeconds`)
+- 类名（MonoBehaviour, ScriptableObject, SpriteMask 等）
+- 方法名（StartCoroutine, DontDestroyOnLoad 等）
+- 属性名（Time.deltaTime, Input.GetKeyDown 等）
+- 组件（SpriteRenderer, AudioSource 等）
+- 数据类型（Vector2Int, WaitForSeconds 等）
 
-### Step 2: Verify Each API using unity-csharp-explorer (Mandatory)
+---
 
-**This step is mandatory and cannot be skipped.**
+## Step 2: 使用 unity-csharp-explorer 验证 API (强制)
 
-For each extracted API, call unity-csharp-explorer to verify:
+**此步骤为强制步骤，不可跳过。**
+
+对每个提取的 API，调用 unity-csharp-explorer agent 验证：
 
 ```
-Task:
-  subagent_type: unity-csharp-explorer
-  prompt: "Find the definition of SpriteMask class, including sprite property and common methods"
-  description: "Verify SpriteMask API"
+Agent(subagent_type="unity-csharp-explorer", prompt="Find the definition of [API Name], including its namespace, methods, and properties")
 ```
 
-**Verification Checklist**:
-- [ ] API exists
-- [ ] Correct signature for methods/properties
-- [ ] Required using statements/namespaces
-- [ ] Available in the target Unity version
-- [ ] Check for deprecation warnings
+unity-csharp-explorer 会：
+1. 确保 UnityCsReference 源码可用（按需克隆）
+2. 搜索 Unity C# 源码
+3. 返回实际定义、签名和命名空间
 
-### Step 3: Pseudocode to Unity API Mapping
+**验证清单**：
+- API 是否存在
+- 方法/属性签名是否正确
+- 所需的 using 语句/命名空间
+- 目标 Unity 版本中是否可用
+- 是否有 [Obsolete] 标记
 
-Convert pseudocode from `design.md` into actual Unity C# code:
+---
+
+## Step 3: 伪代码到 Unity API 映射
+
+将 design.md 中的伪代码转换为实际 Unity C# 代码：
 
 ```markdown
-### [System Name] - [Feature Name]
+### [系统名称] - [功能名称]
 
-**Design Pseudocode:**
+**设计伪代码:**
 ```
-[Pseudocode from design.md]
+[来自 design.md 的伪代码]
 ```
 
-**Unity Implementation:**
+**Unity 实现:**
 ```csharp
-[Actual code based on unity-csharp-explorer verification results]
+[基于 unity-csharp-explorer 验证结果的实际代码]
 ```
 
-**Verification Source**: unity-csharp-explorer
-**Notes:**
-- Used [API Name] because [Reason]
-- Note: [Precautions]
+**验证来源**: unity-csharp-explorer
+**注意事项:**
+- 使用 [API 名称] 因为 [原因]
+- 注意: [注意事项]
 ```
-
-### Step 4: Third-Party Package Assessment
-
-Assess Unity packages required for the project:
-- Mandatory built-in packages (e.g., TextMeshPro)
-- Recommended third-party packages
-- Packages to exclude
 
 ---
 
-## Output Format
+## Step 4: 第三方包评估
+
+评估项目所需的 Unity 包：
+- 必须的内置包（如 TextMeshPro）
+- 推荐的第三方包
+- 应排除的包
+
+---
+
+## 输出格式
 
 ```markdown
-# Tech Research: [Game Name]
+# Tech Research: [游戏名称]
 
-## 1. Unity 版本推荐
+## 1. Unity 版本
 
-| Version | Release Type | Key Features | Recommendation |
-|---------|--------------|--------------|----------------|
-| ... | ... | ... | ... |
-
-**推荐版本**: Unity X.X LTS
-**理由**: ...
+**项目检测**: ✓ 已存在 / ✗ 新项目
+**版本**: Unity X.X.X
+**版本文件**: ProjectSettings/ProjectVersion.txt
 
 ## 2. API 验证清单
 
-| API | Source | Verification Tool | Result | Namespace |
-|-----|--------|-------------------|--------|-----------|
-| SpriteMask | design.md:603 | unity-csharp-explorer | ✓ | UnityEngine |
-| WaitForSeconds | design.md:269 | unity-csharp-explorer | ✓ | UnityEngine |
+| API | 来源 | 验证工具 | 结果 | 命名空间 |
+|-----|------|----------|------|----------|
+| MonoBehaviour | design.md:XX | unity-csharp-explorer | ✓ | UnityEngine |
 | ... | ... | ... | ... | ... |
 
 ## 3. 设计验证
@@ -210,17 +209,17 @@ Assess Unity packages required for the project:
 ...
 ```
 
-**Verification Source**: unity-csharp-explorer
+**验证来源**: unity-csharp-explorer
 
-## 5. 所需 Unity API
+## 5. 所需 Unity API 汇总
 
 | 系统 | Unity APIs | 命名空间 | 说明 |
 |------|-----------|----------|------|
 | ... | ... | ... | ... |
 
-## 6. Third-Party Package Recommendations
+## 6. 第三方包建议
 
-| 包名 | 用途 | 推荐 |
+| 包名 | 用途 | 建议 |
 |------|------|------|
 | TextMeshPro | 文本渲染 | ✓ 必须 (内置) |
 | ... | ... | ... |
@@ -228,7 +227,7 @@ Assess Unity packages required for the project:
 ## 7. API 快速参考
 
 ```csharp
-// Common API Quick Reference
+// 常用 API 快速参考
 ...
 ```
 
@@ -241,18 +240,10 @@ Assess Unity packages required for the project:
 
 ---
 
-## Trigger Conditions
+## 重要规则
 
-This Skill is automatically triggered in the following situations:
-- During the **tech-research phase** of openspec
-- When validating Unity API feasibility
-- When mapping design pseudocode to Unity implementation
-
----
-
-## Important Notes
-
-1. **Must use unity-csharp-explorer** - Every Unity API must be verified via the tool, do not rely on AI memory.
-2. **Record Verification Source** - Indicate the verification tool for each API in the output.
-3. **Focus on Version Compatibility** - Confirm API availability in the target Unity version.
-4. **Mark Deprecated APIs** - If deprecated APIs are found, provide alternatives.
+1. **必须使用 unity-csharp-explorer** - 禁止使用 WebSearch 或 AI 知识替代源码验证
+2. **Agent 不可用时停止执行** - 提示用户重启，不继续后续步骤
+3. **记录验证来源** - 输出中每个 API 标注 "unity-csharp-explorer"
+4. **版本兼容性** - 确认 API 在目标 Unity 版本中可用
+5. **标记废弃 API** - 如发现废弃 API，提供替代方案

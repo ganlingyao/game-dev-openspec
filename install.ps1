@@ -12,6 +12,7 @@ $SKILLS_SOURCE = "$PSScriptRoot\skills"
 $SKILLS_TARGET = "$TargetPath\.claude\skills"
 $SCHEMAS_SOURCE = "$PSScriptRoot\schemas"
 $SCHEMAS_TARGET = "$TargetPath\openspec\schemas"
+$AGENTS_TARGET = "$TargetPath\.claude\agents"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
@@ -65,6 +66,54 @@ Get-ChildItem $SKILLS_SOURCE -Directory | ForEach-Object {
     Copy-Item -Path $source -Destination $SKILLS_TARGET -Recurse -Force
     Write-Host "  [+] $skillName" -ForegroundColor Green
     $installed++
+}
+
+# Install unity-csharp-explorer agent
+Write-Host ""
+Write-Host "Installing agents..." -ForegroundColor Yellow
+Write-Host ""
+
+$agentsInstalled = 0
+if (-not (Test-Path $AGENTS_TARGET)) {
+    New-Item -ItemType Directory -Path $AGENTS_TARGET -Force | Out-Null
+}
+
+$agentFile = "$AGENTS_TARGET\unity-csharp-explorer.md"
+$agentExists = Test-Path $agentFile
+
+try {
+    # Get latest tag from unity-csharp-explorer repo
+    $tagsUrl = "https://api.github.com/repos/zhing2006/unity-csharp-explorer/tags"
+    $tags = Invoke-RestMethod -Uri $tagsUrl -Headers @{ "User-Agent" = "PowerShell" } -ErrorAction Stop
+    
+    if ($tags.Count -gt 0) {
+        $latestTag = $tags[0].name
+        $agentUrl = "https://raw.githubusercontent.com/zhing2006/unity-csharp-explorer/$latestTag/.claude/agents/unity-csharp-explorer.md"
+    }
+    else {
+        # Fallback to main branch
+        $latestTag = "main"
+        $agentUrl = "https://raw.githubusercontent.com/zhing2006/unity-csharp-explorer/main/.claude/agents/unity-csharp-explorer.md"
+    }
+    
+    Invoke-WebRequest -Uri $agentUrl -OutFile $agentFile -ErrorAction Stop
+    
+    if ($agentExists) {
+        Write-Host "  [+] unity-csharp-explorer (updated to $latestTag)" -ForegroundColor Green
+    }
+    else {
+        Write-Host "  [+] unity-csharp-explorer ($latestTag)" -ForegroundColor Green
+    }
+    $agentsInstalled++
+}
+catch {
+    if ($agentExists) {
+        Write-Host "  [!] unity-csharp-explorer (keeping existing, update failed)" -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "  [!] unity-csharp-explorer (download failed: $_)" -ForegroundColor Yellow
+        Write-Host "      Will be auto-installed on first use of game-dev-tech-research skill" -ForegroundColor Gray
+    }
 }
 
 # Copy schemas
@@ -140,12 +189,17 @@ Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Installed:" -ForegroundColor White
 Write-Host "  - $installed skills" -ForegroundColor Gray
+Write-Host "  - $agentsInstalled agents" -ForegroundColor Gray
 Write-Host "  - $schemasInstalled schemas" -ForegroundColor Gray
 Write-Host "  - Default schema: game-dev-workflow" -ForegroundColor Gray
 if ($claudeInstalled) {
     Write-Host "  - CLAUDE.md (project instructions)" -ForegroundColor Gray
 }
 Write-Host ""
+if ($agentsInstalled -gt 0) {
+    Write-Host "[!] IMPORTANT: Restart Claude Code to activate new agents" -ForegroundColor Yellow
+    Write-Host ""
+}
 Write-Host "To update later, run:" -ForegroundColor White
 Write-Host "  irm https://raw.githubusercontent.com/ganlingyao/game-dev-openspec/main/run.ps1 | iex" -ForegroundColor Cyan
 Write-Host ""
