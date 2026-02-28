@@ -1,31 +1,101 @@
 ---
 name: game-dev-u3d-code
-description: Provides Unity C# coding standards, unit testing patterns, and code review guidelines. Use when writing or reviewing Unity scripts.
-disable-model-invocation: true
+description: |
+  Unity C# coding capability with framework integration. Use this skill when:
+  - Writing Unity C# scripts or components
+  - Implementing tasks from design.md or tasks.md
+  - Creating or modifying .cs files in a Unity project
+  - Working on Unity game development code
 ---
 
-# Code Unity Skill
+# Unity Code Skill
 
-Unity C# coding capability ensuring code quality, standardization, and testability.
+Unity C# coding capability ensuring code quality, framework integration, and compilation verification.
 
----
-
-## Reference Files
-
-For detailed standards, see these files:
-
-| File | Content |
-|------|---------|
-| [reference/naming-conventions.md](reference/naming-conventions.md) | Naming rules, file headers, XML docs |
-| [reference/class-structure.md](reference/class-structure.md) | Class member order, code format |
-| [reference/unity-practices.md](reference/unity-practices.md) | Best practices, prohibitions, common fixes |
-| [reference/testing-guide.md](reference/testing-guide.md) | Test structure, examples, principles |
+**Important**: This skill MUST be followed when writing any Unity C# code.
 
 ---
 
-## Quick Reference
+## Step 0: Pre-Coding Checks (MANDATORY)
 
-### Naming Conventions
+Before writing ANY code, check design.md for integration level annotations:
+
+```
+# Look for these markers in pseudocode comments:
+# Reference: ../XDUF/Assets/Framework/...
+# Integration Level: L1 (Copy-Adapt) | L2 (Wrap-Integrate) | L3 (Reference-Design)
+```
+
+### Integration Level Actions
+
+| Level | Meaning | Required Action |
+|-------|---------|-----------------|
+| **L1 Copy-Adapt** | Copy XDUF source, adapt namespace | **MUST** read XDUF source, copy and adapt |
+| **L2 Wrap-Integrate** | Wrap XDUF component, add project interface | **MUST** read XDUF source, create wrapper |
+| **L3 Reference-Design** | Learn design pattern, simplify implementation | **MAY** read source for reference |
+| **Custom** | Fully custom implementation | Use design.md pseudocode directly |
+
+### XDUF Source Location
+
+XDUF framework is located at `../XDUF` relative to the Unity project root:
+
+```
+Parent Directory/
+├── XDUF/                    # XDUF Framework
+│   └── Assets/Framework/    # Source files to reference
+└── YourProject/             # Current Unity project
+    └── Assets/
+```
+
+**To read XDUF source:**
+```
+# From project root, XDUF is at ../XDUF
+Read: "../XDUF/Assets/Framework/[path-from-design.md]"
+```
+
+---
+
+## Step 1: Source Extraction (L1/L2 Only)
+
+When design.md specifies L1 or L2 integration:
+
+1. **Read the reference source file**
+   ```
+   Read: "../XDUF/Assets/Framework/Events/EventManager.cs"
+   ```
+
+2. **Understand the implementation**
+   - Class structure and dependencies
+   - Key methods and their logic
+   - Edge case handling
+   - Performance optimizations (e.g., zero GC)
+
+3. **Copy and adapt**
+   - Change namespace: `XDUF.*` → `{ProjectName}.*`
+   - Apply simplifications from design.md "Adaptation Notes"
+   - Preserve core functionality and patterns
+   - Keep edge case handling
+
+4. **Verify completeness**
+   - Compare with original features
+   - Ensure no critical functionality is lost
+
+---
+
+## Step 2: Write Code (MANDATORY)
+
+  **MUST read these reference files before writing any code:**
+  - reference/naming-conventions.md
+  - reference/class-structure.md
+  - reference/unity-practices.md
+  - refrence/testing-guide.md
+
+- [reference/naming-conventions.md](reference/naming-conventions.md) - Naming rules
+- [reference/class-structure.md](reference/class-structure.md) - Member order, format
+- [reference/unity-practices.md](reference/unity-practices.md) - Best practices
+- [reference/testing-guide.md](reference/testing-guide.md) - Test patterns
+
+### Quick Reference
 
 | Type | Style | Example |
 |------|-------|---------|
@@ -45,64 +115,72 @@ For detailed standards, see these files:
 
 ---
 
-## Coding Workflow
+## Step 3: Compilation Check (MANDATORY)
 
-```
-1. Read task and related design
-       |
-2. Write code (follow standards)
-       |
-3. Check compilation (MANDATORY: read_console)
-       |
-4. Self-check against standards
-       |
-5. Write tests (if required)
-       |
-6. Run tests (test-unity skill)
-       |
-7. Mark task complete
-```
+**After EVERY script creation or modification:**
 
-### Mandatory Post-Script Actions
+1. **Wait for Unity compilation**
+   - Check `editor_state.isCompiling` if available
+   - Or wait 2-3 seconds for domain reload
 
-When using UnityMCP to create or modify scripts:
+2. **Read console for errors**
+   ```
+   mcp__UnityMCP__read_console(types=["error", "warning"])
+   ```
 
-**You MUST call `read_console` after EVERY script creation/modification:**
+3. **Handle results**
+   - **Errors**: Fix immediately. Do NOT proceed to next task.
+   - **Warnings**: Evaluate and fix if necessary.
+   - **No errors**: Continue to next step.
 
-```
-1. Create/modify script via UnityMCP
-2. Wait for domain reload (check editor_state.isCompiling if needed)
-3. Call read_console to check for errors
-4. If errors exist: fix immediately before proceeding
-5. Only continue to next task after successful compilation
-```
+**Prohibited**: Continuing to other tasks while compilation errors exist.
 
 ---
 
-## Self-Check List
+## Step 4: Self-Check
 
-### Standards Check
-- [ ] Naming follows conventions (_camelCase for private)
-- [ ] Use [SerializeField] instead of public
-- [ ] Class members arranged in prescribed order
+### Source Extraction Check (L1/L2)
+- [ ] Read XDUF reference source
+- [ ] Namespace correctly adapted
+- [ ] Core functionality preserved
+- [ ] Design.md adaptations applied
+
+### Coding Standards Check
+- [ ] Naming follows conventions
+- [ ] Using [SerializeField] instead of public
+- [ ] Class members in correct order
 - [ ] No magic numbers
 
-### Unity Check
+### Unity Practices Check
 - [ ] Component references cached in Awake
-- [ ] No Find/GetComponent used in Update
+- [ ] No Find/GetComponent in Update
 - [ ] Events unsubscribed in OnDisable
-- [ ] Use object pooling for frequently created objects
+- [ ] Object pooling for frequent allocations
 
-### Performance Check
-- [ ] No memory allocation in Update
-- [ ] No unnecessary GetComponent calls
-- [ ] Expensive operations use interval checks or coroutines
+### Compilation Check
+- [ ] Called read_console
+- [ ] No compilation errors
+- [ ] Warnings evaluated/fixed
 
-### Maintainability Check
-- [ ] Public APIs have documentation comments
-- [ ] Complex logic has explanatory comments
-- [ ] Methods do not exceed 30 lines
-- [ ] Classes do not exceed 300 lines
+---
+
+## Workflow Summary
+
+```
+1. Read task and design.md
+       ↓
+2. Check integration level (L1/L2/L3/Custom)
+       ↓
+3. If L1/L2: Read XDUF source from ../XDUF/Assets/Framework/...
+       ↓
+4. Write code following standards
+       ↓
+5. Check compilation (read_console) - MANDATORY
+       ↓
+6. Self-check against checklist
+       ↓
+7. Mark task complete
+```
 
 ---
 
@@ -115,3 +193,34 @@ When using UnityMCP to create or modify scripts:
 | Nesting Depth | < 3 |
 | Parameter Count | < 5 |
 | Cyclomatic Complexity | < 10 |
+
+---
+
+## Example: L1 Integration
+
+**design.md annotation:**
+```
+class EventBus implements IEventBus:
+    # Reference: ../XDUF/Assets/Framework/Events/EventManager.cs
+    # Integration Level: L1 (Copy-Adapt)
+    # Adaptation Notes:
+    #   - Namespace: XDUF.Events → Plants.Core.Events
+    #   - Simplify: Remove thread safety (single-threaded is sufficient)
+```
+
+**Correct approach:**
+```
+1. Read "../XDUF/Assets/Framework/Events/EventManager.cs"
+2. Copy the implementation
+3. Change namespace XDUF.Events → Plants.Core.Events
+4. Remove thread safety code as specified
+5. Write to "Assets/Scripts/Core/Events/EventBus.cs"
+6. Run read_console to verify compilation
+```
+
+**Incorrect approach:**
+```
+❌ Write simplified version from pseudocode only
+❌ Skip reading XDUF source
+❌ Skip compilation check
+```
