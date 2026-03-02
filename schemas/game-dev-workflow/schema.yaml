@@ -1,6 +1,10 @@
 name: game-dev-workflow
 version: 4
-description: 游戏开发工作流 - research → proposal → design → tech-research → specs → tasks
+description: 
+  开发标准工作流 - research → proposal → design → tech-research → specs → tasks
+  程序开发工作流 - design → tech-research → specs → tasks
+  若项目为空项目或任务需求很模糊，推荐使用标准开发工作流；
+  若任务为开发某系统/某功能，推荐使用程序开发工作流。
 
 artifacts:
   - id: research
@@ -10,8 +14,10 @@ artifacts:
     skill: game-dev-research
     instruction: |
       调研游戏品类，产出 research.md,文档使用中文编写。
+      标准开发工作流的第一项。
+      程序开发工作流的可选项，不需要可跳过。
 
-      **必须调用 skill: game-dev-research**
+      **必须调用 skill(game-dev-research)**
 
       内容包括：
       - 游戏品类分析：同类游戏的成功要素
@@ -28,6 +34,8 @@ artifacts:
     skill: null
     instruction: |
       基于 research.md 创建游戏提案,文档使用中文编写。
+      标准开发工作流的第二项。
+      程序开发工作流的可选项，不需要可跳过。
 
       内容包括：
       - 游戏概念：2-3 句描述核心创意和目标玩家
@@ -36,8 +44,7 @@ artifacts:
       - 能力模块：按 kebab-case 分组功能 (player-movement, score-system 等)
       - 目标平台：平台、配置要求、输入方式
       - 范围优先级：v1.0 包含什么，推迟什么
-    requires:
-      - research
+    requires: []
 
   - id: design
     generates: design.md
@@ -46,8 +53,10 @@ artifacts:
     skill: game-dev-u3d-design
     instruction: |
       基于 proposal.md 创建技术设计文档,文档使用中文编写。
+      标准开发工作流的第三项。
+      程序开发工作流的第一项。
 
-      **必须调用 skill: game-dev-u3d-design**
+      **必须调用 skill(game-dev-u3d-design)**
 
       内容包括：
       - 项目架构：目录结构和组织方式
@@ -57,9 +66,7 @@ artifacts:
       - 数据管理：配置、运行时状态、存档方案
       - 性能考量：对象池、Update 优化
       - 风险缓解：研究阶段风险的应对措施
-    requires:
-      - proposal
-      - research
+    requires: []
 
   - id: tech-research
     generates: tech-research.md
@@ -68,6 +75,8 @@ artifacts:
     skill: game-dev-tech-research
     instruction: |
       验证 design.md 的设计在 Unity 中的可行性,文档使用中文编写。
+      标准开发工作流的第四项。
+      程序开发工作流的第二项。
 
       **必须调用 skill: tech-research-unity**
 
@@ -81,7 +90,6 @@ artifacts:
       - API 速查表：项目常用 API 快速参考
     requires:
       - design
-      - proposal
 
   - id: specs
     generates: specs/**/*.md
@@ -90,6 +98,8 @@ artifacts:
     skill: null
     instruction: |
       为 proposal 中的每个能力模块创建规格文档,文档使用中文编写。
+      标准开发工作流的第五项。
+      程序开发工作流的第三项。
 
       格式要求：
       - 每个能力一个文件：specs/<capability>/spec.md
@@ -98,7 +108,6 @@ artifacts:
       - 场景格式：#### Scenario: <名称>，包含 WHEN/THEN
       - 每个需求至少一个场景
     requires:
-      - proposal
       - design
       - tech-research
 
@@ -109,6 +118,9 @@ artifacts:
     skill: null
     instruction: |
       创建实现任务清单,文档使用中文编写。
+      标准开发工作流的第六项。
+      程序开发工作流的第四项。
+
       文档需要在顶部特别强调：“强制调用 Skill(game-dev-u3d-code)加载规范，不得使用依赖内部知识规范”
 
       格式要求：
